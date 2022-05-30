@@ -1,0 +1,27 @@
+{
+  "name": "websocket-chat",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "dependencies": {},
+  "type": "module",
+  "devDependencies": {
+    "express": "^4.18.1",
+    "ws": "^8.7.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HOPUISHAN/websocket-chat.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/HOPUISHAN/websocket-chat/issues"
+  },
+  "homepage": "https://github.com/HOPUISHAN/websocket-chat#readme"
+}

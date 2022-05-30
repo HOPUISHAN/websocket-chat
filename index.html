@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>聊天室WebSocket</title>
+  <style>
+  </style>
+</head>
+<body>
+  <input type="text" placeholder="输入你的内容">
+  <button>发送</button>
+  <div></div>
+  <script>
+    let input = document.querySelector('input')
+    let button = document.querySelector('button')
+    let div = document.querySelector('div')
+    // h5已经直接提供了WebSocket的api，所以我们可以直接去使用
+    
+    //1. 创建WebSocket
+    // 参数1，WebSocket的服务地址
+    let socket = new WebSocket('ws://127.0.0.1:8080')
+
+    //2. open 当和WebSocket服务连接成功的时候触发
+    socket.addEventListener('open', () => {
+      div.innerHTML = '连接服务成功了'
+    })
+
+    // 3.主动的给webSocket服务发送消息
+    button.addEventListener('click', () => {
+      let val = input.value
+      socket.send(val)
+      // 发送消息后，立马清空input值
+      input.value = ''
+    })
+
+    // 4.接收webSocket服务的数据
+    socket.addEventListener('message', (e) => {
+      console.log(e);
+      let data = JSON.stringify(e.data);
+      var p = document.createElement('p')
+      if (data.type === 0) {
+        p.style.color = 'green'
+      } else if (data.type === 1) {
+        p.style.color = 'red'
+      } else {
+        p.style.color = 'blue'
+      }
+      time = data.time.split(' ')
+      console.log(time)
+      p.innerHTML = data.msg + '&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp' + time[0]
+      div.appendChild(p)
+    })
+  </script>
+</body>
+</html>
