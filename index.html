@@ -5,27 +5,135 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>聊天室WebSocket</title>
   <style>
+      body {
+          margin: 0;
+          background: #f7f7f7;
+      }
+      .flexRow{
+          display: flex;
+          align-items: baseline;
+      }
+      .lineStyle {
+          margin: 8px 0;
+          font-size: 14px;
+      }
+      .inputName {
+          padding: 5px 8px;
+          border: 1px solid #ccc;
+          outline: none;
+      }
+      .buttonStyle {
+          border: none;
+          background: #1890ff;
+          padding: 8px 20px;
+          color: #fff;
+          border-radius: 5px;
+      }
+      .chatSignal {
+          border-bottom: 1px solid #ccc;
+          padding: 16px;
+      }
+      #login{
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          padding-top: 20%;
+      }
+      #chat{
+          display: none;
+          height: 100vh;
+          justify-content: flex-start;
+      }
+      .leftWrap {
+          width: 30%;
+          border-right: 1px solid #ccc;
+          
+      }
+      .rightWrap {
+          width: 70%;
+          display: flex;
+          flex-direction: column;
+      }
+      .top {
+        flex: 1;
+        padding: 16px;
+      }
+      .bottom {
+          border-top: 1px solid #ccc;
+          display: flex;
+          flex-direction: column;
+          padding: 16px;
+      }
+      .inputContent {
+        margin-bottom: 16px;
+        border: none;
+        height: 100px;
+        padding: 8px;
+        outline: none;
+        background: #f7f7f7;
+      }
+      .timeStyle {
+          font-size: 12px;
+          margin-left: 20px;
+          color: #999;
+      }
+      .systemMess {
+          font-size: 13px;
+          color: #fff;
+          background-color: #999;
+          border-radius: 4px;
+          padding: 5px 8px;
+          margin-bottom: 8px;
+      }
   </style>
 </head>
 <body>
-  <input type="text" placeholder="输入你的内容">
-  <button>发送</button>
-  <div></div>
+    <div id="login">
+        <div class="lineStyle" style="font-size: 20px">欢迎加入聊天室</div>
+        <input type="text" placeholder="请输入你的昵称" id="username" class="lineStyle inputName">
+        <button id="name_ok" class="lineStyle buttonStyle">进入</button>
+    </div>
+    <div id="chat">
+        <div class="leftWrap">
+            <div class="chatSignal">聊天室</div>
+        </div>
+        <div class="rightWrap">
+            <div class="top">
+                <div id="list"></div>
+            </div>
+            <div class="bottom">
+                <textarea placeholder="输入你的内容" id="content" class="inputContent"></textarea>
+                <button id="send" class="buttonStyle">发送</button>
+            </div>
+        </div>
+    </div>
   <script>
-    let input = document.querySelector('input')
-    let button = document.querySelector('button')
-    let div = document.querySelector('div')
+      let name = document.getElementById('username');
+      let name_ok = document.getElementById('name_ok');
+
+    let input = document.getElementById('content')
+    let button = document.getElementById('send')
+    let div = document.getElementById('list')
+
+    let chat = document.getElementById('chat')
     // h5已经直接提供了WebSocket的api，所以我们可以直接去使用
     
     //1. 创建WebSocket
     // 参数1，WebSocket的服务地址
     let socket = new WebSocket('ws://127.0.0.1:8080')
-
+    
+    name_ok.addEventListener('click',()=>{
+        let val = name.value
+        socket.send(`login:${val}`);
+        document.getElementById("chat").style.display="flex";
+        document.getElementById("login").style.display="none";
+    })
+    
     //2. open 当和WebSocket服务连接成功的时候触发
     socket.addEventListener('open', () => {
-      div.innerHTML = '连接服务成功了'
+    //   div.innerHTML = '连接服务成功了'
     })
-
     // 3.主动的给webSocket服务发送消息
     button.addEventListener('click', () => {
       let val = input.value
@@ -37,18 +145,22 @@
     // 4.接收webSocket服务的数据
     socket.addEventListener('message', (e) => {
       console.log(e);
-      let data = JSON.stringify(e.data);
-      var p = document.createElement('p')
-      if (data.type === 0) {
-        p.style.color = 'green'
-      } else if (data.type === 1) {
-        p.style.color = 'red'
+      let data = JSON.parse(e.data);
+      console.log(data);
+    //   let data = e.data;
+      var p = document.createElement('div')
+      if (data.type == 2) {
+        p.style.color = 'green';
+        // p.innerHTML = data.userName + data.msg + data.time
+        p.innerHTML = `<div class="flexRow" style="margin-bottom: 4px;"><div>${data.userName}</div><div class="timeStyle">${data.time}</div></div><div style="color: #333;margin-bottom: 12px;">${data.msg}</div>`
+      } else if (data.type == 1) {
+        // p.style.color = 'red';
+        // p.innerHTML = data.msg
+        p.innerHTML = `<div class="flexRow" style="justify-content: center;"><div class="systemMess">${data.msg}</div></div>`
       } else {
-        p.style.color = 'blue'
+        // p.innerHTML = data.msg;
+        p.innerHTML = `<div class="flexRow" style="justify-content: center;"><div class="systemMess">${data.msg}</div></div>`
       }
-      time = data.time.split(' ')
-      console.log(time)
-      p.innerHTML = data.msg + '&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp' + time[0]
       div.appendChild(p)
     })
   </script>
