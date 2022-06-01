@@ -5,12 +5,13 @@ const type_leave = 1;
 const type_msg = 2;
 
 let count = 0; // 记录当前连接上来的总用户数据
+let userlist = [];  // 记录当前列表对象
 
 const wss = new WebSocketServer({ port: 8080 });
 
 wss.on('connection', function connection(ws) {
-    count++;
-    let userName = `user-${count}`
+    // console.log("ws",ws)
+    ws.userName = `user-${count}`
     // let time = new Date().toLocaleTimeString();
     // ws.on("login",function login(data) {
     //     // 连接之后 发送广播
@@ -26,10 +27,12 @@ wss.on('connection', function connection(ws) {
       console.log('received: %s', data);
       let msg = data + ""
       if (msg.indexOf('login:')!== -1) {
-        userName = msg.split(":")[1];
-        broadcast(userName,type_enter,`${userName}进入了聊天室！`, false);
+        count++;
+        ws.userName = msg.split(":")[1];
+        userlist.push(ws.userName);
+        broadcast(ws.userName,type_enter,`${ws.userName} 进入了聊天室！`, false);
       } else {
-        broadcast(userName,type_msg,msg, isBinary)
+        broadcast(ws.userName,type_msg,msg, isBinary)
       }
     });
 
@@ -37,7 +40,8 @@ wss.on('connection', function connection(ws) {
     ws.on("close", function close(data, isBinary){
         console.log('close: %s', data);
         count--;
-      broadcast(userName,type_leave,`${userName}离开了聊天室！`, false)
+        userlist = userlist.filter(item => item !== ws.userName)
+      broadcast(ws.userName,type_leave,`${ws.userName} 离开了聊天室！`, false)
     })
 
     // 报错
@@ -52,7 +56,9 @@ function broadcast(name, type,msg, isBinary) {
         type: type,
         userName: name,
         msg: msg,
-        time: new Date().toLocaleTimeString()
+        time: new Date().toLocaleTimeString(),
+        count: count,
+        userlist: userlist
     }
     // server.connections 表示所有用户
     wss.clients.forEach(item=>{

@@ -1,138 +1,222 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>聊天室WebSocket</title>
   <style>
-      body {
-          margin: 0;
-          background: #f7f7f7;
-      }
-      .flexRow{
-          display: flex;
-          align-items: baseline;
-      }
-      .lineStyle {
-          margin: 8px 0;
-          font-size: 14px;
-      }
-      .inputName {
-          padding: 5px 8px;
-          border: 1px solid #ccc;
-          outline: none;
-      }
-      .buttonStyle {
-          border: none;
-          background: #1890ff;
-          padding: 8px 20px;
-          color: #fff;
-          border-radius: 5px;
-      }
-      .chatSignal {
-          border-bottom: 1px solid #ccc;
-          padding: 16px;
-      }
-      #login{
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-          padding-top: 20%;
-      }
-      #chat{
-          display: none;
-          height: 100vh;
-          justify-content: flex-start;
-      }
-      .leftWrap {
-          width: 30%;
-          border-right: 1px solid #ccc;
-          
-      }
-      .rightWrap {
-          width: 70%;
-          display: flex;
-          flex-direction: column;
-      }
-      .top {
-        flex: 1;
-        padding: 16px;
-      }
-      .bottom {
-          border-top: 1px solid #ccc;
-          display: flex;
-          flex-direction: column;
-          padding: 16px;
-      }
-      .inputContent {
-        margin-bottom: 16px;
-        border: none;
-        height: 100px;
-        padding: 8px;
-        outline: none;
-        background: #f7f7f7;
-      }
-      .timeStyle {
-          font-size: 12px;
-          margin-left: 20px;
-          color: #999;
-      }
-      .systemMess {
-          font-size: 13px;
-          color: #fff;
-          background-color: #999;
-          border-radius: 4px;
-          padding: 5px 8px;
-          margin-bottom: 8px;
-      }
+    body {
+      margin: 0;
+      background: #f7f7f7;
+    }
+
+    .flexRow {
+      display: flex;
+      align-items: baseline;
+    }
+
+    .lineStyle {
+      margin: 8px 0;
+      font-size: 14px;
+    }
+
+    .inputName {
+      padding: 5px 8px;
+      border: 1px solid #ccc;
+      outline: none;
+    }
+
+    .buttonStyle {
+      border: none;
+      background: #1890ff;
+      padding: 8px 20px;
+      color: #fff;
+      border-radius: 5px;
+    }
+
+    .chatSignal {
+      border-bottom: 1px solid #ccc;
+      padding: 16px;
+    }
+
+    #login {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding-top: 20%;
+    }
+
+    #chat {
+      display: none;
+      height: 100vh;
+      justify-content: flex-start;
+    }
+
+    .leftWrap {
+      width: 30%;
+      border-right: 1px solid #ccc;
+
+    }
+
+    .rightWrap {
+      width: 70%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .top {
+      flex: 1;
+      padding: 16px;
+      overflow: auto;
+    }
+
+    .bottom {
+      border-top: 1px solid #ccc;
+      display: flex;
+      flex-direction: column;
+      padding: 16px;
+    }
+
+    .inputContent {
+      margin-bottom: 16px;
+      border: none;
+      height: 100px;
+      padding: 8px;
+      outline: none;
+      background: #f7f7f7;
+    }
+
+    .timeStyle {
+      font-size: 12px;
+      margin-left: 20px;
+      color: #999;
+    }
+
+    .systemMess {
+      font-size: 13px;
+      color: #fff;
+      background-color: #999;
+      border-radius: 4px;
+      padding: 5px 8px;
+      margin-bottom: 8px;
+    }
+
+    .count {
+      font-size: 12px;
+      color: #999;
+    }
+
+    #rightClickDiv {
+      display: none;
+      position: absolute;
+      float: left;
+      width: 9.5vw;
+      height: 25vh;
+      border: 1px solid #d8d8d8;
+      box-shadow: 3px 3px 5px #dadada;
+      z-index: 10001;
+      background-color: white;
+    }
+
+    ul#rightClickUl {
+      position: relative;
+      width: 100%;
+      height: 96%;
+      top: 2%;
+      font-size: 0.77vw;
+      color: #525252;
+      cursor: default;
+    }
+
+    #rightClickUl>li {
+      position: relative;
+      margin-top: 2%;
+      height: 3vh;
+      font-size: 0.77vw;
+      line-height: 1.5vw;
+    }
+
+    .liHover:hover {
+      /*鼠标悬浮样式*/
+      background-color: #e1e1e1;
+    }
+
+    .dLi {
+      /*禁止访问时文件颜色变更*/
+      color: #bababa;
+    }
+
+    .liContent {
+      position: relative;
+      left: 21%;
+    }
   </style>
+  <script src="https://cdn.staticfile.org/jquery/2.0.0/jquery.min.js"></script>
 </head>
+
 <body>
-    <div id="login">
-        <div class="lineStyle" style="font-size: 20px">欢迎加入聊天室</div>
-        <input type="text" placeholder="请输入你的昵称" id="username" class="lineStyle inputName">
-        <button id="name_ok" class="lineStyle buttonStyle">进入</button>
-    </div>
-    <div id="chat">
-        <div class="leftWrap">
-            <div class="chatSignal">聊天室</div>
+  <div id="login">
+    <div class="lineStyle" style="font-size: 20px">欢迎加入聊天室</div>
+    <input type="text" placeholder="请输入你的昵称" id="username" class="lineStyle inputName">
+    <button id="name_ok" class="lineStyle buttonStyle">进入</button>
+  </div>
+  <div id="chat">
+    <div class="leftWrap">
+      <div class="chatSignal">
+        <div>聊天室 <span id="count" class="count"></span></div>
+      </div>
+      <div id="leftList">
+
+      </div>
+      <div class="leftDiv">
+        <!--右键div-->
+        <div id="rightClickDiv" onclick="">
+          <ul id="rightClickUl">
+            <li class="createLi rightClickLi liHover"><span class="liContent deleteSpan">踢出去</span></li>
+            <li class="addProduct rightClickLi liHover"><span class="liContent addProductSpan">私聊</span></li>
+          </ul>
         </div>
-        <div class="rightWrap">
-            <div class="top">
-                <div id="list"></div>
-            </div>
-            <div class="bottom">
-                <textarea placeholder="输入你的内容" id="content" class="inputContent"></textarea>
-                <button id="send" class="buttonStyle">发送</button>
-            </div>
-        </div>
+      </div>
     </div>
+    <div class="rightWrap">
+      <div class="top">
+        <div id="list"></div>
+      </div>
+      <div class="bottom">
+        <textarea placeholder="输入你的内容" id="content" class="inputContent"></textarea>
+        <button id="send" class="buttonStyle">发送</button>
+      </div>
+    </div>
+  </div>
+
   <script>
-      let name = document.getElementById('username');
-      let name_ok = document.getElementById('name_ok');
+    let name = document.getElementById('username');
+    let name_ok = document.getElementById('name_ok');
 
     let input = document.getElementById('content')
     let button = document.getElementById('send')
     let div = document.getElementById('list')
 
-    let chat = document.getElementById('chat')
+    let chat = document.getElementById('chat');
+    let wrap = document.getElementById("leftList")
     // h5已经直接提供了WebSocket的api，所以我们可以直接去使用
-    
+
     //1. 创建WebSocket
     // 参数1，WebSocket的服务地址
     let socket = new WebSocket('ws://127.0.0.1:8080')
-    
-    name_ok.addEventListener('click',()=>{
-        let val = name.value
-        socket.send(`login:${val}`);
-        document.getElementById("chat").style.display="flex";
-        document.getElementById("login").style.display="none";
+
+    name_ok.addEventListener('click', () => {
+      let val = name.value
+      socket.send(`login:${val}`);
+      document.getElementById("chat").style.display = "flex";
+      document.getElementById("login").style.display = "none";
     })
-    
+
     //2. open 当和WebSocket服务连接成功的时候触发
     socket.addEventListener('open', () => {
-    //   div.innerHTML = '连接服务成功了'
+      //   div.innerHTML = '连接服务成功了'
     })
     // 3.主动的给webSocket服务发送消息
     button.addEventListener('click', () => {
@@ -146,23 +230,102 @@
     socket.addEventListener('message', (e) => {
       console.log(e);
       let data = JSON.parse(e.data);
-      console.log(data);
-    //   let data = e.data;
-      var p = document.createElement('div')
+      var p = document.createElement('div');
+      var user = document.createElement('div');
       if (data.type == 2) {
         p.style.color = 'green';
-        // p.innerHTML = data.userName + data.msg + data.time
         p.innerHTML = `<div class="flexRow" style="margin-bottom: 4px;"><div>${data.userName}</div><div class="timeStyle">${data.time}</div></div><div style="color: #333;margin-bottom: 12px;">${data.msg}</div>`
       } else if (data.type == 1) {
-        // p.style.color = 'red';
-        // p.innerHTML = data.msg
-        p.innerHTML = `<div class="flexRow" style="justify-content: center;"><div class="systemMess">${data.msg}</div></div>`
+        document.getElementById("count").innerHTML = "( " + data.count + " )"
+        p.innerHTML = `<div class="flexRow" style="justify-content: center;"><div class="systemMess">${data.msg}当前在线人数：${data.count}</div></div>`
+        user.innerHTML = '';
+        data.userlist.forEach((item) => {
+          let b = document.createElement('div')
+          b.innerHTML = `<div class="chatSignal">
+                <div>${item}</div>
+              </div>`
+          user.appendChild(b);
+        })
+        wrap.innerHTML = user
       } else {
-        // p.innerHTML = data.msg;
-        p.innerHTML = `<div class="flexRow" style="justify-content: center;"><div class="systemMess">${data.msg}</div></div>`
+        document.getElementById("count").innerHTML = "( " + data.count + " )"
+        p.innerHTML = `<div class="flexRow" style="justify-content: center;"><div class="systemMess">${data.msg}当前在线人数：${data.count}</div></div>`
+        user.innerHTML = '';
+        data.userlist.forEach((item) => {
+          let b = document.createElement('div')
+          b.innerHTML = `<div class="chatSignal" id="${item}" onclick="click('${item}')">
+                <div>${item}</div>
+              </div>`
+          user.appendChild(b);
+        })
+        wrap.innerHTML = ''
+        wrap.appendChild(user)
       }
       div.appendChild(p)
     })
+
+    $('.leftWrap').on('contextmenu', function () {
+      return false;
+    });
+
+    function click(params) {
+      console.log("123",params)
+      // $('#'+ params).on('mousedown', function (event) {
+      //   var code = event.which;
+      //   switch (code) {
+      //     case 1:
+      //       // 左键
+      //       console.log(event);
+
+      //       // 判断子元素
+      //       if (event.target.className.indexOf('addProductSpan') > -1 || event.target.className.indexOf('addProduct') > -1) {
+      //         // 添加产品
+      //         console.log("添加产品");
+
+      //       } else if (event.target.className.indexOf('deleteLi') > -1 || event.target.className.indexOf('deleteSpan') > -1) {
+      //         // 删除
+      //         if (!$(".deleteLi").hasClass('dLi')) {
+      //           console.log("删除");
+      //         }
+
+      //       } else if (event.target.className.indexOf('ztree') > -1) {
+      //         $('#rightClickDiv').hide();
+      //       }
+
+      //       break;
+      //     case 2: mouse = "中键(滚轮)";
+      //       break;
+      //     case 3: mouse = "右键";
+      //       // 点击区域空白处
+      //       console.log(event);
+
+      //       if (event.target.className.indexOf("ztree") > -1) {
+      //         // 更改内容 点击空白页面
+      //         $("#rightClickUl>li:not(.createLi)").removeClass("liHover").addClass("dLi");
+      //       } else if (event.target.className.indexOf("ico_docu") > -1 || event.target.className.indexOf("node_name") > -1) {
+      //         // 更改内容 点击产品类包
+      //         $(".addProduct").addClass("liHover").removeClass("dLi");
+      //         $("#rightClickUl>li:not(.addProduct)").removeClass("liHover").addClass("dLi");
+      //       }
+      //       var x = event.offsetX;
+      //       var y = event.offsetY;
+      //       // 如果点击位置在div右侧，调整显示位置
+      //       if (event.offsetX + $("#rightClickDiv").width() > $(this)[0].clientWidth) {
+      //         x = $(this)[0].clientWidth - $("#rightClickDiv").width();
+      //       }
+      //       if (event.offsetY + $("#rightClickDiv").height() > $(this)[0].clientHeight) {
+      //         y = $(this)[0].clientHeight - $("#rightClickDiv").height();
+      //       }
+
+      //       //改变菜单的位置到事件发生的位置
+      //       $('#rightClickDiv').css({ 'top': y, 'left': x, 'display': 'block' });
+      //       break;
+      //     default: break;
+      //   }
+      // })
+    }
+
   </script>
 </body>
+
 </html>
