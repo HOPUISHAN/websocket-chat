@@ -31,6 +31,8 @@ wss.on('connection', function connection(ws) {
         ws.userName = msg.split(":")[1];
         userlist.push(ws.userName);
         broadcast(ws.userName,type_enter,`${ws.userName} 进入了聊天室！`, false);
+      }else if (msg.indexOf('close:')!== -1) {
+        closeWs(msg.split(":")[1]);
       } else {
         broadcast(ws.userName,type_msg,msg, isBinary)
       }
@@ -66,4 +68,14 @@ function broadcast(name, type,msg, isBinary) {
             item.send(JSON.stringify(data),{binary: isBinary})
         }
       })
+}
+
+function closeWs(params) {
+  wss.clients.forEach(item=>{
+    if (item.userName == params) {
+      if (item.readyState === webSocket.OPEN) {
+        item.close();
+      }
+    }
+  })
 }

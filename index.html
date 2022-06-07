@@ -113,7 +113,7 @@
       position: absolute;
       float: left;
       width: 9.5vw;
-      height: 25vh;
+      /* height: 25vh; */
       border: 1px solid #d8d8d8;
       box-shadow: 3px 3px 5px #dadada;
       z-index: 10001;
@@ -128,6 +128,8 @@
       font-size: 0.77vw;
       color: #525252;
       cursor: default;
+      list-style: none;
+      padding: 0;
     }
 
     #rightClickUl>li {
@@ -135,7 +137,8 @@
       margin-top: 2%;
       height: 3vh;
       font-size: 0.77vw;
-      line-height: 1.5vw;
+      line-height: 3vh;
+      text-align: center;
     }
 
     .liHover:hover {
@@ -150,7 +153,6 @@
 
     .liContent {
       position: relative;
-      left: 21%;
     }
   </style>
   <script src="https://cdn.staticfile.org/jquery/2.0.0/jquery.min.js"></script>
@@ -170,15 +172,15 @@
       <div id="leftList">
 
       </div>
-      <div class="leftDiv">
-        <!--右键div-->
-        <div id="rightClickDiv" onclick="">
-          <ul id="rightClickUl">
-            <li class="createLi rightClickLi liHover"><span class="liContent deleteSpan">踢出去</span></li>
-            <li class="addProduct rightClickLi liHover"><span class="liContent addProductSpan">私聊</span></li>
-          </ul>
-        </div>
+      <!-- <div class="leftDiv"> -->
+      <!--右键div-->
+      <div id="rightClickDiv">
+        <ul id="rightClickUl">
+          <li class="createLi rightClickLi liHover" onclick="deleteUser()"><span class="liContent deleteSpan">踢出去</span></li>
+          <li class="addProduct rightClickLi liHover"><span class="liContent addProductSpan">私聊</span></li>
+        </ul>
       </div>
+      <!-- </div> -->
     </div>
     <div class="rightWrap">
       <div class="top">
@@ -241,22 +243,24 @@
         user.innerHTML = '';
         data.userlist.forEach((item) => {
           let b = document.createElement('div')
-          b.innerHTML = `<div class="chatSignal">
+          b.innerHTML = `<div class="chatSignal" id="${item}" oncontextmenu="clickEvent('${item}')">
                 <div>${item}</div>
               </div>`
           user.appendChild(b);
         })
-        wrap.innerHTML = user
+        wrap.innerHTML = ''
+        wrap.appendChild(user)
       } else {
         document.getElementById("count").innerHTML = "( " + data.count + " )"
         p.innerHTML = `<div class="flexRow" style="justify-content: center;"><div class="systemMess">${data.msg}当前在线人数：${data.count}</div></div>`
         user.innerHTML = '';
         data.userlist.forEach((item) => {
           let b = document.createElement('div')
-          b.innerHTML = `<div class="chatSignal" id="${item}" onclick="click('${item}')">
+          b.innerHTML = `<div class="chatSignal" id="${item}" oncontextmenu="clickEvent('${item}')">
                 <div>${item}</div>
               </div>`
           user.appendChild(b);
+
         })
         wrap.innerHTML = ''
         wrap.appendChild(user)
@@ -268,63 +272,44 @@
       return false;
     });
 
-    function click(params) {
-      console.log("123",params)
-      // $('#'+ params).on('mousedown', function (event) {
-      //   var code = event.which;
-      //   switch (code) {
-      //     case 1:
-      //       // 左键
-      //       console.log(event);
+    var userName = ''
+    // $('#leftList').on('contextmenu', function (){
+    function clickEvent(params) {
+      console.log("123", event)
+      userName = params;
+      if (event.target.className.indexOf("ztree") > -1) {
+        // 更改内容 点击空白页面
+        $("#rightClickUl>li:not(.createLi)").removeClass("liHover").addClass("dLi");
+      } else if (event.target.className.indexOf("ico_docu") > -1 || event.target.className.indexOf("node_name") > -1) {
+        // 更改内容 点击产品类包
+        $(".addProduct").addClass("liHover").removeClass("dLi");
+        $("#rightClickUl>li:not(.addProduct)").removeClass("liHover").addClass("dLi");
+      }
+      var x = event.offsetX;
+      var y = event.offsetY;
+      // 如果点击位置在div右侧，调整显示位置
+      // if (event.offsetX + $("#rightClickDiv").width() > $(this)[0].clientWidth) {
+      //   // x = $(this)[0].clientWidth - $("#rightClickDiv").width();
+      //   x = $(this)[0].clientWidth;
 
-      //       // 判断子元素
-      //       if (event.target.className.indexOf('addProductSpan') > -1 || event.target.className.indexOf('addProduct') > -1) {
-      //         // 添加产品
-      //         console.log("添加产品");
+      // }
+      if (event.offsetY + $("#rightClickDiv").height() > $(this)[0].clientHeight) {
+        // y = $(this)[0].clientHeight - $("#rightClickDiv").height();
+        y = $(this)[0].clientHeight;
 
-      //       } else if (event.target.className.indexOf('deleteLi') > -1 || event.target.className.indexOf('deleteSpan') > -1) {
-      //         // 删除
-      //         if (!$(".deleteLi").hasClass('dLi')) {
-      //           console.log("删除");
-      //         }
+      }
 
-      //       } else if (event.target.className.indexOf('ztree') > -1) {
-      //         $('#rightClickDiv').hide();
-      //       }
+      //改变菜单的位置到事件发生的位置
+      $('#rightClickDiv').css({ 'top': y, 'left': x, 'display': 'block' });
 
-      //       break;
-      //     case 2: mouse = "中键(滚轮)";
-      //       break;
-      //     case 3: mouse = "右键";
-      //       // 点击区域空白处
-      //       console.log(event);
-
-      //       if (event.target.className.indexOf("ztree") > -1) {
-      //         // 更改内容 点击空白页面
-      //         $("#rightClickUl>li:not(.createLi)").removeClass("liHover").addClass("dLi");
-      //       } else if (event.target.className.indexOf("ico_docu") > -1 || event.target.className.indexOf("node_name") > -1) {
-      //         // 更改内容 点击产品类包
-      //         $(".addProduct").addClass("liHover").removeClass("dLi");
-      //         $("#rightClickUl>li:not(.addProduct)").removeClass("liHover").addClass("dLi");
-      //       }
-      //       var x = event.offsetX;
-      //       var y = event.offsetY;
-      //       // 如果点击位置在div右侧，调整显示位置
-      //       if (event.offsetX + $("#rightClickDiv").width() > $(this)[0].clientWidth) {
-      //         x = $(this)[0].clientWidth - $("#rightClickDiv").width();
-      //       }
-      //       if (event.offsetY + $("#rightClickDiv").height() > $(this)[0].clientHeight) {
-      //         y = $(this)[0].clientHeight - $("#rightClickDiv").height();
-      //       }
-
-      //       //改变菜单的位置到事件发生的位置
-      //       $('#rightClickDiv').css({ 'top': y, 'left': x, 'display': 'block' });
-      //       break;
-      //     default: break;
-      //   }
-      // })
     }
+      // })
 
+    function deleteUser () {
+      $('#rightClickDiv').hide();
+      socket.send(`close:${userName}`)
+      // socket.close(userName);
+    }
   </script>
 </body>
 
